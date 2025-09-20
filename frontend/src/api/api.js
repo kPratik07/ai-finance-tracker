@@ -1,6 +1,6 @@
-const BASE_URL = `http://localhost:${
-  import.meta.env.VITE_API_PORT || "5000"
-}/api`;
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const BASE_URL = `${API_BASE_URL}/api`;
 
 const getAuthHeaders = () => ({
   "Content-Type": "application/json",
