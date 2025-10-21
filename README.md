@@ -4,8 +4,6 @@
 
 An intelligent finance tracking application that uses AI to automatically extract and categorize transactions from bank statements, providing insightful analytics and expense management.
 
-![AI Finance Tracker](frontend/public/logo.svg)
-
 ## ✨ Features
 
 - 🤖 **AI-Powered Statement Processing** - Automatically extract transactions from PDF/text bank statements
