@@ -37,6 +37,19 @@ app.use(express.json());
 // Static files setup
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
+// Health check endpoint
+app.get("/", (req, res) => {
+  res.json({ 
+    status: "OK", 
+    message: "AI Finance Tracker API is running",
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ status: "healthy" });
+});
+
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/transactions", transactionRoutes);
