@@ -1,8 +1,10 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import User from "../models/User.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/apiError.js";
+import sendEmail from "../utils/sendEmail.js";
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -71,6 +73,155 @@ export const getProfile = asyncHandler(async (req, res) => {
   } else {
     throw new ApiError("User not found", 404);
   }
+});
+
+// @desc    Forgot password
+// @route   POST /api/auth/forgot-password
+// @access  Public
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new ApiError("User not found with this email", 404);
+  }
+
+  // Generate reset token
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  
+  // Hash token and set to resetPasswordToken field
+  user.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // Set expire time (1 hour)
+  user.resetPasswordExpire = Date.now() + 60 * 60 * 1000;
+
+  await user.save();
+
+  // Create reset URL (use frontend URL)
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
+
+  // Email HTML template
+  const emailHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .button { display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🔐 Password Reset Request</h1>
+        </div>
+        <div class="content">
+          <p>Hi ${user.name},</p>
+          <p>You requested to reset your password for your AI Finance Tracker account.</p>
+          <p>Click the button below to reset your password:</p>
+          <p style="text-align: center;">
+            <a href="${resetUrl}" class="button">Reset Password</a>
+          </p>
+          <p>Or copy and paste this link into your browser:</p>
+          <p style="word-break: break-all; background: white; padding: 10px; border-radius: 5px;">
+            ${resetUrl}
+          </p>
+          <div class="warning">
+            <strong>⚠️ Important:</strong> This link will expire in 1 hour for security reasons.
+          </div>
+          <p>If you didn't request this password reset, please ignore this email and your password will remain unchanged.</p>
+        </div>
+        <div class="footer">
+          <p>© ${new Date().getFullYear()} AI Finance Tracker. All rights reserved.</p>
+          <p>This is an automated email, please do not reply.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    // Send email
+    await sendEmail({
+      email: user.email,
+      subject: "Password Reset Request - AI Finance Tracker",
+      html: emailHtml,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset link has been sent to your email",
+    });
+  } catch (error) {
+    // If email fails, clear the reset token
+    user.resetPasswordToken = null;
+    user.resetPasswordExpire = null;
+    await user.save();
+
+    console.error("Email send error:", error);
+    
+    // For development, still return the token if email fails
+    if (process.env.NODE_ENV === "development") {
+      console.log("Password Reset Token:", resetToken);
+      console.log("Reset URL:", resetUrl);
+      
+      return res.status(200).json({
+        success: true,
+        message: "Email service unavailable. Reset token logged to console.",
+        resetToken, // Only in development
+      });
+    }
+
+    throw new ApiError("Email could not be sent. Please try again later.", 500);
+  }
+});
+
+// @desc    Reset password
+// @route   POST /api/auth/reset-password/:token
+// @access  Public
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { password } = req.body;
+
+  // Hash the token from URL
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  // Find user by token and check if not expired
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new ApiError("Invalid or expired reset token", 400);
+  }
+
+  // Hash new password
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(password, salt);
+
+  // Clear reset token fields
+  user.resetPasswordToken = null;
+  user.resetPasswordExpire = null;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password reset successful",
+  });
 });
 
 // Generate JWT token

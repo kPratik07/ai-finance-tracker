@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../api/api";
 import "../../styles/auth.css";
 
-export const Register = () => {
+export const ResetPassword = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
     password: "",
     confirmPassword: "",
   });
@@ -15,17 +13,7 @@ export const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
-
-  // Clear form when component mounts
-  useEffect(() => {
-    setFormData({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    });
-    setError("");
-  }, []);
+  const { token } = useParams();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,16 +24,18 @@ export const Register = () => {
       return;
     }
 
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
     try {
       setLoading(true);
-      await api.auth.register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      });
+      await api.auth.resetPassword(token, formData.password);
+      alert("Password reset successful! Please login with your new password.");
       navigate("/login");
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Failed to reset password");
     } finally {
       setLoading(false);
     }
@@ -54,42 +44,22 @@ export const Register = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Create Account</h2>
+        <h2>Reset Password</h2>
+        <p className="forgot-password-subtitle">
+          Enter your new password below.
+        </p>
+        
         {error && <div className="error-message">{error}</div>}
-        <form onSubmit={handleSubmit} autoComplete="off">
-          <div className="form-group">
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              autoComplete="off"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <input
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              autoComplete="off"
-              required
-            />
-          </div>
+        
+        <form onSubmit={handleSubmit}>
           <div className="form-group password-input-wrapper">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder="New Password"
               value={formData.password}
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
               }
-              autoComplete="new-password"
               required
             />
             <button
@@ -101,15 +71,15 @@ export const Register = () => {
               {showPassword ? "👁️" : "👁️‍🗨️"}
             </button>
           </div>
+          
           <div className="form-group password-input-wrapper">
             <input
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirm Password"
+              placeholder="Confirm New Password"
               value={formData.confirmPassword}
               onChange={(e) =>
                 setFormData({ ...formData, confirmPassword: e.target.value })
               }
-              autoComplete="new-password"
               required
             />
             <button
@@ -121,12 +91,14 @@ export const Register = () => {
               {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
             </button>
           </div>
+          
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? "Creating Account..." : "Register"}
+            {loading ? "Resetting..." : "Reset Password"}
           </button>
         </form>
+        
         <p className="auth-link">
-          Already have an account? <a href="/login">Login</a>
+          Remember your password? <a href="/login">Login</a>
         </p>
       </div>
     </div>

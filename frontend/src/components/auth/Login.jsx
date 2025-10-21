@@ -7,6 +7,7 @@ export const Login = () => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -45,9 +46,9 @@ export const Login = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className="form-group password-input-wrapper">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={credentials.password}
               onChange={(e) =>
@@ -55,11 +56,22 @@ export const Login = () => {
               }
               required
             />
+            <button
+              type="button"
+              className="password-toggle-btn"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? "👁️" : "👁️‍🗨️"}
+            </button>
           </div>
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+        <p className="auth-link">
+          <a href="/forgot-password">Forgot Password?</a>
+        </p>
         <p className="auth-link">
           Don't have an account? <a href="/register">Sign up</a>
         </p>

@@ -28,6 +28,41 @@
   margin-bottom: 20px;
 }
 
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input-wrapper input {
+  padding-right: 45px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+  opacity: 0.6;
+}
+
+.password-toggle-btn:hover {
+  opacity: 1;
+}
+
+.password-toggle-btn:focus {
+  outline: 2px solid #3498db;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .form-group input {
   width: 100%;
   padding: 12px;
@@ -78,6 +113,23 @@
   background-color: #fceae9;
   border-radius: 8px;
   animation: shake 0.5s ease-in-out;
+}
+
+.success-message {
+  color: #27ae60;
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: #d5f4e6;
+  border-radius: 8px;
+  animation: slideIn 0.5s ease-out;
+}
+
+.forgot-password-subtitle {
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 14px;
+  margin-bottom: 20px;
 }
 
 .auth-link {
