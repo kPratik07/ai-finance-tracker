@@ -1,5 +1,5 @@
 import asyncHandler from "../utils/asyncHandler.js";
-import { processStatement } from "../services/statementProcessing.js";
+import { processStatementWithAI } from "../services/aiStatementProcessor.js";
 import { parseFile } from "../utils/fileParser.js";
 import ApiError from "../utils/apiError.js";
 
@@ -12,8 +12,8 @@ export const uploadStatement = asyncHandler(async (req, res) => {
     // Parse file content
     const fileContent = await parseFile(req.file);
 
-    // Process statement and extract transactions
-    const transactions = await processStatement(fileContent, req.user._id);
+    // Process statement with AI (auto-selects best provider: Groq > Gemini > OpenAI)
+    const transactions = await processStatementWithAI(fileContent, req.user._id);
 
     res.status(200).json({
       success: true,

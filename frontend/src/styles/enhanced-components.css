@@ -1,0 +1,541 @@
+/* Enhanced Transaction Cards */
+.transaction-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.transaction-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.transaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.transaction-date-type {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.transaction-card .date {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.type-badge.income {
+  background: #d4edda;
+  color: #155724;
+}
+
+.type-badge.expense {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.transaction-card .amount {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.transaction-card .amount.income {
+  color: #28a745;
+}
+
+.transaction-card .amount.expense {
+  color: #dc3545;
+}
+
+.transaction-body {
+  margin: 12px 0;
+}
+
+.transaction-details .description {
+  font-size: 15px;
+  color: #333;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.transaction-details .merchant {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+.merchant-icon {
+  font-size: 14px;
+}
+
+.transaction-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.transaction-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.category-badge {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: #e9ecef;
+  color: #495057;
+}
+
+.category-badge.food {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.category-badge.transport {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.category-badge.entertainment {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.category-badge.shopping {
+  background: #d4edda;
+  color: #155724;
+}
+
+.category-badge.utilities {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.category-badge.salary {
+  background: #d4edda;
+  color: #155724;
+}
+
+.currency-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #6c757d;
+  color: white;
+}
+
+/* Enhanced Dashboard */
+.dashboard {
+  padding: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dashboard-header {
+  margin-bottom: 20px;
+}
+
+.dashboard-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 6px 0;
+}
+
+.dashboard-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* Adjust for smaller screens */
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.statistics-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.statistics-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.statistics-card.income {
+  border-left: 4px solid #28a745;
+}
+
+.statistics-card.expense {
+  border-left: 4px solid #dc3545;
+}
+
+.statistics-card.neutral {
+  border-left: 4px solid #6c757d;
+}
+
+.statistics-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.statistics-card .card-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.statistics-card .card-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.statistics-card .card-body {
+  margin-top: 6px;
+}
+
+.statistics-card .card-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+@media (max-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 0; /* Prevent overflow */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+}
+
+.chart-header {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.chart-header h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.chart-subtitle {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}
+
+.chart-content {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Enhanced Expense Chart */
+.expense-chart-container {
+  width: 100%;
+}
+
+.chart-wrapper {
+  height: 300px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.chart-insights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.insight-card {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.insight-card:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+}
+
+.insight-label {
+  font-size: 10px;
+  color: #666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.insight-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.insight-value.expense {
+  color: #dc3545;
+}
+
+.insight-value.income {
+  color: #28a745;
+}
+
+.insight-value.warning {
+  color: #ffc107;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 12px 8px; /* Reduce side padding for more width */
+  }
+
+  .dashboard-header h1 {
+    font-size: 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .chart-card {
+    padding: 16px 12px; /* Less side padding */
+  }
+
+  .transaction-card {
+    padding: 14px 12px; /* Less side padding */
+  }
+
+  .transaction-card .amount {
+    font-size: 20px;
+  }
+}
+
+/* Loading and Error States */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 18px;
+  color: #666;
+}
+
+.error {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #f5c6cb;
+  margin: 20px 0;
+}
+
+/* Button Improvements */
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background: #007bff;
+  color: white;
+}
+
+.btn-edit:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+.btn-delete {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Compact layout overrides for large desktop to avoid vertical scrolling */
+@media (min-width: 1280px) {
+  .dashboard {
+    padding: 10px 14px 14px; /* less top padding, move content up */
+  }
+
+  .dashboard-header {
+    margin-bottom: 14px; /* tighter header */
+  }
+
+  .dashboard-header h1 {
+    font-size: 24px; /* smaller title */
+    margin-bottom: 4px; /* less space below title */
+  }
+
+  .stats-grid {
+    gap: 10px; /* tighter gaps */
+    margin-bottom: 16px;
+  }
+
+  .statistics-card {
+    padding: 14px; /* smaller card padding */
+  }
+
+  .statistics-card .card-value {
+    font-size: 20px; /* smaller values */
+  }
+
+  .statistics-card .card-icon {
+    font-size: 24px; /* smaller icons */
+  }
+
+  .charts-grid {
+    gap: 12px; /* reduce chart gap */
+    margin-top: 16px;
+  }
+
+  .chart-card {
+    padding: 14px; /* compact chart card */
+  }
+
+  .chart-wrapper {
+    height: 220px; /* reduced but still visible chart height */
+  }
+
+  .chart-content {
+    min-height: 200px; /* reduced but still visible min-height */
+  }
+
+  .chart-header h2 {
+    font-size: 14px; /* smaller chart titles */
+  }
+
+  .chart-header {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+
+  .chart-subtitle {
+    font-size: 11px; /* smaller subtitle */
+  }
+
+  .chart-insights {
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .insight-card {
+    padding: 8px;
+  }
+
+  .insight-label {
+    font-size: 9px;
+  }
+
+  .insight-value {
+    font-size: 13px;
+  }
+
+  .transaction-card {
+    padding: 14px; /* compact transaction cards too */
+    margin-bottom: 10px;
+  }
+}

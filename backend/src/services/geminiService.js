@@ -1,33 +1,31 @@
-import OpenAI from "openai";
-import dotenv from "dotenv";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import Transaction from "../models/Transaction.js";
-import ApiError from "../utils/apiError.js";
+import ApiError from "../utils/ApiError.js";
 
-// Ensure environment variables are loaded
-dotenv.config();
-
-// Lazy initialization - only create client when needed
-let openai = null;
-
-const getOpenAIClient = () => {
-  if (!openai && process.env.OPENAI_API_KEY) {
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+/**
+ * Get Gemini client instance
+ */
+const getGeminiClient = () => {
+  if (!process.env.GEMINI_API_KEY) {
+    return null;
   }
-  return openai;
+  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 };
 
-export const processStatement = async (content, userId) => {
+/**
+ * Process a bank statement using Google's Gemini AI
+ * @param {string} content - The text content of the bank statement
+ * @param {string} userId - The ID of the user
+ * @returns {Promise<Array>} - Array of processed transactions
+ */
+export const processStatementWithGemini = async (content, userId) => {
   try {
-    // Check if content is valid
     if (!content || content.trim().length < 10) {
       throw new Error("Invalid or empty file content");
     }
 
-    console.log("=== PROCESSING STATEMENT ===");
+    console.log("=== PROCESSING STATEMENT WITH GEMINI ===");
     console.log("Content length:", content.length);
-    console.log("Content preview:", content.substring(0, 500));
     console.log("User ID:", userId);
 
     // Check if content contains bank statement keywords
@@ -37,14 +35,27 @@ export const processStatement = async (content, userId) => {
       content.toLowerCase().includes("upi") ||
       content.toLowerCase().includes("transaction");
 
-    console.log("Contains bank keywords:", hasBankKeywords);
-
     if (!hasBankKeywords) {
       throw new Error("Content does not appear to be a bank statement");
     }
 
-    // Improved prompt specifically for Indian bank statements
-    const prompt = `Extract ALL transactions from this Indian bank statement. This appears to be a Kotak Mahindra Bank statement.
+    // Get Gemini client
+    const geminiClient = getGeminiClient();
+    if (!geminiClient) {
+      throw new Error("Gemini API key not configured");
+    }
+
+    // Get the model
+    const model = geminiClient.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 4000,
+      }
+    });
+
+    // Improved prompt for Indian bank statements
+    const prompt = `Extract ALL transactions from this Indian bank statement. This appears to be a bank statement (Kotak/HDFC/SBI/ICICI).
 
 IMPORTANT RULES:
 1. Extract ONLY real transactions from the statement (ignore headers, footers, account details)
@@ -54,18 +65,20 @@ IMPORTANT RULES:
 5. Amounts: Use the "Withdrawal(Dr)/Deposit(Cr)" column values
 6. Type: "income" for (Cr) credits, "expense" for (Dr) debits
 7. Currency: INR (Indian Rupees)
-8. Date: Use the exact date from the statement
+8. Date: Use the exact date from the statement (format: YYYY-MM-DD)
 9. Category: Categorize based on merchant/description:
    - UPI/Gaming apps -> "entertainment"
    - UPI/Food merchants -> "food" 
    - UPI/Transport -> "transport"
    - IMPS/NEFT transfers -> "other"
    - Salary/credits -> "salary"
+   - Shopping -> "shopping"
+   - Bills/utilities -> "utilities"
 
 Statement content:
 ${content}
 
-Return ONLY a JSON array of transactions in this exact format:
+Return ONLY a JSON array of transactions in this exact format (no markdown, no explanation):
 [
   {
     "description": "Original transaction description from statement",
@@ -78,54 +91,45 @@ Return ONLY a JSON array of transactions in this exact format:
   }
 ]`;
 
-    console.log("Calling OpenAI API...");
+    console.log("Calling Gemini API...");
 
-    const openaiClient = getOpenAIClient();
-    if (!openaiClient) {
-      throw new Error("OpenAI API key not configured");
-    }
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const responseText = response.text();
 
-    const response = await openaiClient.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a financial data extraction expert specializing in Indian bank statements. Extract transaction data accurately from Kotak, HDFC, SBI, ICICI and other Indian bank statements. Always return valid JSON format.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      temperature: 0.1,
-      max_tokens: 3000,
-    });
+    console.log("Gemini API call successful");
 
-    console.log("OpenAI API call successful");
-
-    // Parse GPT response
+    // Parse response
     let transactions;
     try {
-      const responseContent = response.choices[0].message.content;
-      console.log("AI Response length:", responseContent.length);
-      console.log("AI Response preview:", responseContent.substring(0, 200));
+      console.log("AI Response length:", responseText.length);
+      console.log("AI Response preview:", responseText.substring(0, 200));
+
+      // Remove markdown code blocks if present
+      let cleanedContent = responseText.trim();
+      if (cleanedContent.startsWith("```json")) {
+        cleanedContent = cleanedContent.replace(/```json\n?/g, "").replace(/```\n?/g, "");
+      } else if (cleanedContent.startsWith("```")) {
+        cleanedContent = cleanedContent.replace(/```\n?/g, "");
+      }
 
       // Try to extract JSON from the response
-      const jsonMatch = responseContent.match(/\[[\s\S]*\]/);
+      const jsonMatch = cleanedContent.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         console.log("Found JSON match, parsing...");
         transactions = JSON.parse(jsonMatch[0]);
       } else {
         console.log("No JSON match found, trying direct parse...");
-        transactions = JSON.parse(responseContent);
+        transactions = JSON.parse(cleanedContent);
       }
 
       console.log("Parsed transactions count:", transactions.length);
-      console.log("First transaction:", transactions[0]);
+      if (transactions.length > 0) {
+        console.log("First transaction:", transactions[0]);
+      }
     } catch (parseError) {
       console.error("JSON parsing error:", parseError);
-      console.log("Raw response:", response.choices[0].message.content);
+      console.log("Raw response:", responseText);
       throw new Error(
         `Failed to parse AI response as JSON: ${parseError.message}`
       );
@@ -181,7 +185,7 @@ Return ONLY a JSON array of transactions in this exact format:
     );
     return validTransactions;
   } catch (error) {
-    console.error("Error processing statement:", error);
+    console.error("Error processing statement with Gemini:", error);
     console.error("Error stack:", error.stack);
     throw new ApiError(`Failed to process statement: ${error.message}`, 500);
   }

@@ -1,0 +1,31 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="32" cy="32" r="30" fill="url(#gradient)"/>
+  
+  <!-- Gradient Definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Dollar Sign -->
+  <g transform="translate(32, 32)">
+    <!-- Vertical Lines -->
+    <line x1="-2" y1="-12" x2="-2" y2="-16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="2" y1="-12" x2="2" y2="-16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="-2" y1="12" x2="-2" y2="16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="2" y1="12" x2="2" y2="16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    
+    <!-- S Shape -->
+    <path d="M 6 -10 C 6 -13, 3 -14, 0 -14 C -3 -14, -6 -13, -6 -10 C -6 -7, -3 -5, 0 -5 C 3 -5, 6 -3, 6 0 C 6 3, 3 5, 0 5 C -3 5, -6 3, -6 0" 
+          fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- AI Nodes -->
+    <circle cx="-12" cy="-6" r="1.5" fill="#4ade80"/>
+    <circle cx="12" cy="-6" r="1.5" fill="#4ade80"/>
+    <circle cx="-12" cy="6" r="1.5" fill="#60a5fa"/>
+    <circle cx="12" cy="6" r="1.5" fill="#60a5fa"/>
+  </g>
+</svg>

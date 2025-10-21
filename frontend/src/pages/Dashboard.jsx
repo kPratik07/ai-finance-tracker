@@ -50,39 +50,58 @@ export const Dashboard = () => {
 
   return (
     <div className="dashboard">
-      <h1>Financial Dashboard</h1>
+      <div className="dashboard-header">
+        <h1>Financial Dashboard</h1>
+        <p className="dashboard-subtitle">
+          Overview of your financial activity
+        </p>
+      </div>
 
-      <div className="stats-container">
+      <div className="stats-grid">
         <StatisticsCard
           title="Total Income"
           value={stats.totalIncome}
           type="income"
+          icon="💰"
         />
         <StatisticsCard
           title="Total Expenses"
           value={stats.totalExpenses}
           type="expense"
+          icon="💸"
         />
         <StatisticsCard
           title="Current Balance"
           value={stats.balance}
           type={stats.balance >= 0 ? "income" : "expense"}
+          icon={stats.balance >= 0 ? "✅" : "⚠️"}
         />
         <StatisticsCard
-          title="Transactions"
+          title="Total Transactions"
           value={stats.transactionCount}
           type="neutral"
+          icon="📊"
         />
       </div>
 
-      <div className="charts-container">
-        <div className="chart-box">
-          <h2>Expense Categories</h2>
-          <CategoryPieChart transactions={transactions} />
+      <div className="charts-grid">
+        <div className="chart-card">
+          <div className="chart-header">
+            <h2>Expense Categories</h2>
+            <p className="chart-subtitle">Distribution by category</p>
+          </div>
+          <div className="chart-content">
+            <CategoryPieChart transactions={transactions} />
+          </div>
         </div>
-        <div className="chart-box">
-          <h2>Monthly Expenses</h2>
-          <ExpenseLineChart transactions={transactions} />
+        <div className="chart-card">
+          <div className="chart-header">
+            <h2>Monthly Expenses</h2>
+            <p className="chart-subtitle">Spending trends over time</p>
+          </div>
+          <div className="chart-content">
+            <ExpenseLineChart transactions={transactions} />
+          </div>
         </div>
       </div>
     </div>

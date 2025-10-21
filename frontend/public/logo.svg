@@ -1,0 +1,53 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#gradient1)"/>
+  
+  <!-- Gradient Definitions -->
+  <defs>
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Dollar Sign with AI Circuit Pattern -->
+  <g transform="translate(256, 256)">
+    <!-- Main Dollar Sign -->
+    <path d="M -20 -80 L -20 -100 M 20 -80 L 20 -100" stroke="white" stroke-width="12" stroke-linecap="round"/>
+    <path d="M -20 80 L -20 100 M 20 80 L 20 100" stroke="white" stroke-width="12" stroke-linecap="round"/>
+    
+    <!-- S Shape -->
+    <path d="M 40 -60 C 40 -80, 20 -90, 0 -90 C -20 -90, -40 -80, -40 -60 C -40 -40, -20 -30, 0 -30 C 20 -30, 40 -20, 40 0 C 40 20, 20 30, 0 30 C -20 30, -40 20, -40 0" 
+          fill="none" stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- AI Circuit Nodes -->
+    <circle cx="-80" cy="-40" r="8" fill="#4ade80"/>
+    <circle cx="80" cy="-40" r="8" fill="#4ade80"/>
+    <circle cx="-80" cy="40" r="8" fill="#60a5fa"/>
+    <circle cx="80" cy="40" r="8" fill="#60a5fa"/>
+    
+    <!-- Connecting Lines (Circuit Pattern) -->
+    <line x1="-80" y1="-40" x2="-50" y2="-60" stroke="#4ade80" stroke-width="3" opacity="0.6"/>
+    <line x1="80" y1="-40" x2="50" y2="-60" stroke="#4ade80" stroke-width="3" opacity="0.6"/>
+    <line x1="-80" y1="40" x2="-50" y2="20" stroke="#60a5fa" stroke-width="3" opacity="0.6"/>
+    <line x1="80" y1="40" x2="50" y2="20" stroke="#60a5fa" stroke-width="3" opacity="0.6"/>
+    
+    <!-- Small Data Points -->
+    <circle cx="-100" cy="0" r="5" fill="#fbbf24"/>
+    <circle cx="100" cy="0" r="5" fill="#fbbf24"/>
+    <circle cx="0" cy="-110" r="5" fill="#f472b6"/>
+    <circle cx="0" cy="110" r="5" fill="#f472b6"/>
+    
+    <!-- Pulse Effect Lines -->
+    <line x1="-100" y1="0" x2="-80" y2="-20" stroke="#fbbf24" stroke-width="2" opacity="0.4"/>
+    <line x1="100" y1="0" x2="80" y2="-20" stroke="#fbbf24" stroke-width="2" opacity="0.4"/>
+  </g>
+  
+  <!-- Outer Ring with Segments -->
+  <circle cx="256" cy="256" r="240" fill="none" stroke="white" stroke-width="4" opacity="0.2"/>
+  <circle cx="256" cy="256" r="230" fill="none" stroke="white" stroke-width="2" opacity="0.15"/>
+</svg>

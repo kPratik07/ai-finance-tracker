@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../api/api";
 import "../../styles/auth.css";
@@ -13,6 +13,17 @@ export const Register = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Clear form when component mounts
+  useEffect(() => {
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    });
+    setError("");
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,7 +54,7 @@ export const Register = () => {
       <div className="auth-card">
         <h2>Create Account</h2>
         {error && <div className="error-message">{error}</div>}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} autoComplete="off">
           <div className="form-group">
             <input
               type="text"
@@ -52,6 +63,7 @@ export const Register = () => {
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
+              autoComplete="off"
               required
             />
           </div>
@@ -63,6 +75,7 @@ export const Register = () => {
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
+              autoComplete="off"
               required
             />
           </div>
@@ -74,6 +87,7 @@ export const Register = () => {
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
               }
+              autoComplete="new-password"
               required
             />
           </div>
@@ -85,6 +99,7 @@ export const Register = () => {
               onChange={(e) =>
                 setFormData({ ...formData, confirmPassword: e.target.value })
               }
+              autoComplete="new-password"
               required
             />
           </div>

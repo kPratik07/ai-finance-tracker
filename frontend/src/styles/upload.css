@@ -179,9 +179,42 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 480px) {
+/* Responsive styles for small screens */
+@media (max-width: 768px) {
+  .upload-page {
+    padding: 1rem 0.5rem; /* Less side padding */
+  }
+
+  .upload-container {
+    padding: 1.5rem 1rem; /* Less side padding */
+  }
+
+  .statement-upload-container {
+    margin: 1rem 0.5rem; /* Less side margin */
+    padding: 1.5rem 1rem; /* Less side padding */
+  }
+
   .file-uploader {
-    padding: 1rem;
+    padding: 1.5rem 1rem; /* Less side padding */
+  }
+}
+
+@media (max-width: 480px) {
+  .upload-page {
+    padding: 0.75rem 0.25rem; /* Even less padding */
+  }
+
+  .upload-container {
+    padding: 1rem 0.75rem;
+  }
+
+  .statement-upload-container {
+    margin: 0.75rem 0.25rem;
+    padding: 1rem 0.75rem;
+  }
+
+  .file-uploader {
+    padding: 1rem 0.75rem;
   }
 
   .upload-icon {

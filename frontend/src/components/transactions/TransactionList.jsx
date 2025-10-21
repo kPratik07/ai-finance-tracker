@@ -45,16 +45,45 @@ export const TransactionList = ({ transactions = [], onUpdate }) => {
               ) : (
                 <>
                   <div className="transaction-header">
-                    <span className="date">
-                      {new Date(transaction.date).toLocaleDateString()}
-                    </span>
+                    <div className="transaction-date-type">
+                      <span className="date">
+                        {new Date(transaction.date).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </span>
+                      <span className={`type-badge ${transaction.type}`}>
+                        {transaction.type === 'income' ? '↓ Income' : '↑ Expense'}
+                      </span>
+                    </div>
                     <span className={`amount ${transaction.type}`}>
+                      {transaction.type === 'expense' ? '-' : '+'}
                       {formatCurrency(transaction.amount, transaction.currency)}
                     </span>
                   </div>
-                  <p className="description">{transaction.description}</p>
+                  
+                  <div className="transaction-body">
+                    <div className="transaction-details">
+                      <p className="description">{transaction.description}</p>
+                      {transaction.merchant && transaction.merchant !== 'unknown' && (
+                        <p className="merchant">
+                          <span className="merchant-icon">🏪</span>
+                          {transaction.merchant}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
                   <div className="transaction-footer">
-                    <span className="category">{transaction.category}</span>
+                    <div className="transaction-meta">
+                      <span className={`category-badge ${transaction.category}`}>
+                        {transaction.category}
+                      </span>
+                      {transaction.currency && transaction.currency !== 'INR' && (
+                        <span className="currency-badge">{transaction.currency}</span>
+                      )}
+                    </div>
                     <div className="actions">
                       <button
                         onClick={() => setEditingId(transaction._id)}

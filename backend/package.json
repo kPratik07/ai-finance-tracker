@@ -8,6 +8,7 @@
     "kill-port": "npx kill-port 5000"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
     "canvas": "^3.2.0",
@@ -17,6 +18,7 @@
     "express": "^4.18.2",
     "form-data": "^4.0.4",
     "gpt4all": "^1.0.0",
+    "groq-sdk": "^0.7.0",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.3",
     "multer": "^1.4.5-lts.1",

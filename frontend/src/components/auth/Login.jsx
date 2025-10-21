@@ -16,7 +16,11 @@ export const Login = () => {
 
     try {
       await api.auth.login(credentials);
-      navigate("/dashboard");
+      // Force a small delay to ensure localStorage is updated
+      setTimeout(() => {
+        navigate("/", { replace: true });
+        window.location.reload(); // Force reload to update nav state
+      }, 100);
     } catch (err) {
       setError(err.message);
     } finally {
