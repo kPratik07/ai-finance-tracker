@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Transaction from "../models/Transaction.js";
-import ApiError from "../utils/ApiError.js";
+import ApiError from "../utils/apiError.js";
 
 /**
  * Get Gemini client instance
