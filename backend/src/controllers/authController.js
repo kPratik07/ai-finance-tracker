@@ -5,6 +5,7 @@ import User from "../models/User.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/apiError.js";
 import sendEmail from "../utils/sendEmail.js";
+import sendEmailBrevo from "../utils/sendEmailBrevo.js";
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -151,12 +152,20 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   `;
 
   try {
-    // Send email
-    await sendEmail({
-      email: user.email,
-      subject: "Password Reset Request - AI Finance Tracker",
-      html: emailHtml,
-    });
+    // Try Brevo first, then fallback to SMTP
+    if (process.env.BREVO_API_KEY) {
+      await sendEmailBrevo({
+        email: user.email,
+        subject: "Password Reset Request - AI Finance Tracker",
+        html: emailHtml,
+      });
+    } else {
+      await sendEmail({
+        email: user.email,
+        subject: "Password Reset Request - AI Finance Tracker",
+        html: emailHtml,
+      });
+    }
 
     res.status(200).json({
       success: true,

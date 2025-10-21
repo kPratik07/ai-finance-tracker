@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "@sendgrid/mail": "^8.1.6",
+    "@sendinblue/client": "^3.3.1",
     "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
     "canvas": "^3.2.0",
@@ -24,7 +26,8 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^7.0.9",
     "openai": "^5.21.0",
-    "pdfjs-dist": "^3.11.174"
+    "pdfjs-dist": "^3.11.174",
+    "resend": "^6.2.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

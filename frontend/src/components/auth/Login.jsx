@@ -70,9 +70,6 @@ export const Login = () => {
           </button>
         </form>
         <p className="auth-link">
-          <a href="/forgot-password">Forgot Password?</a>
-        </p>
-        <p className="auth-link">
           Don't have an account? <a href="/register">Sign up</a>
         </p>
       </div>

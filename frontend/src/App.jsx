@@ -3,9 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation 
 import { TransactionProvider } from "./context/TransactionContext";
 import { Login } from "./components/auth/Login";
 import { Register } from "./components/auth/Register";
-import { ForgotPassword } from "./components/auth/ForgotPassword";
-import { ResetPassword } from "./components/auth/ResetPassword";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { Landing } from "./pages/Landing";
 import { Dashboard } from "./pages/Dashboard";
 import { StatementUpload } from "./pages/StatementUpload";
 import Transactions from "./pages/Transactions";
@@ -31,36 +30,54 @@ function AppContent() {
     navigate("/login");
   };
 
+  // Hide navbar on auth pages if needed
+  const hideNavbar = false;
+
   return (
     <TransactionProvider>
       <div className="layout">
-        {isLoggedIn && (
+        {!hideNavbar && (
           <nav className="navbar">
             <div className="nav-content">
               <div className="nav-brand">
-                <img src="/logo.svg" alt="AI Finance Tracker Logo" className="nav-logo" />
-                <h1>AI Finance Tracker</h1>
+                <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <h1>💰 AI Finance Tracker</h1>
+                </Link>
               </div>
-              <div className="nav-links">
-                <Link to="/">Dashboard</Link>
-                <Link to="/upload">Upload Statement</Link>
-                <Link to="/transactions">Transactions</Link>
-                <button onClick={handleLogout} className="logout-btn">
-                  Logout
-                </button>
-              </div>
+              {isLoggedIn ? (
+                <div className="nav-links">
+                  <Link to="/dashboard">Dashboard</Link>
+                  <Link to="/upload">Upload Statement</Link>
+                  <Link to="/transactions">Transactions</Link>
+                  <button onClick={handleLogout} className="logout-btn">
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="nav-links">
+                  {location.pathname === '/login' ? (
+                    <Link to="/register" className="nav-link-btn btn-primary">Sign Up</Link>
+                  ) : location.pathname === '/register' ? (
+                    <Link to="/login" className="nav-link-btn">Login</Link>
+                  ) : (
+                    <>
+                      <Link to="/login" className="nav-link-btn">Login</Link>
+                      <Link to="/register" className="nav-link-btn btn-primary">Sign Up</Link>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </nav>
         )}
         <main className="app-main">
           <div className="container">
             <Routes>
+              <Route path="/" element={isLoggedIn ? <Dashboard /> : <Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route
-                path="/"
+                path="/dashboard"
                 element={
                   <ProtectedRoute>
                     <Dashboard />
