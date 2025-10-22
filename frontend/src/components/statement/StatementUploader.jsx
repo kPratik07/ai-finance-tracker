@@ -13,12 +13,14 @@ export const StatementUploader = ({
   const handleFileSelect = async (file) => {
     if (!file) return;
 
+    let progressInterval = null;
+
     try {
       onUploadStart?.();
       setUploadProgress(10);
 
       // Simulate upload progress
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setUploadProgress((prev) => Math.min(prev + 10, 90));
       }, 500);
 
@@ -28,8 +30,14 @@ export const StatementUploader = ({
       setUploadProgress(100);
       onUploadSuccess?.(result);
     } catch (error) {
+      // Clear interval on error
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
+      setUploadProgress(0);
       onUploadError?.(error);
     } finally {
+      // Reset progress after a delay
       setTimeout(() => setUploadProgress(0), 1000);
     }
   };

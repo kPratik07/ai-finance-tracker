@@ -21,6 +21,13 @@ export const StatementUpload = () => {
     console.error("Upload error:", error);
     setError(error.message || "Failed to process statement");
     setProcessing(false);
+    setStatus("");
+  };
+
+  const handleRetry = () => {
+    setError("");
+    setStatus("");
+    setProcessing(false);
   };
 
   return (
@@ -38,7 +45,14 @@ export const StatementUpload = () => {
           onUploadError={handleUploadError}
         />
         {processing && <ProcessingStatus />}
-        {error && <div className="error-message">{error}</div>}
+        {error && (
+          <div className="error-container">
+            <div className="error-message">{error}</div>
+            <button onClick={handleRetry} className="btn btn-retry">
+              Try Again
+            </button>
+          </div>
+        )}
         {status && <div className="success-message">{status}</div>}
       </div>
     </div>
