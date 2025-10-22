@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation 
 import { TransactionProvider } from "./context/TransactionContext";
 import { Login } from "./components/auth/Login";
 import { Register } from "./components/auth/Register";
+import { ForgotPassword } from "./components/auth/ForgotPassword";
+import { ResetPassword } from "./components/auth/ResetPassword";
+import { VerifyOTP } from "./components/auth/VerifyOTP";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { Landing } from "./pages/Landing";
 import { Dashboard } from "./pages/Dashboard";
@@ -91,6 +94,9 @@ function AppContent() {
               <Route path="/" element={isLoggedIn ? <Dashboard /> : <Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/verify-otp" element={<VerifyOTP />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route
                 path="/dashboard"
                 element={

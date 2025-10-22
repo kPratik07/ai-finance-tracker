@@ -69,6 +69,9 @@ export const Login = () => {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+        <p className="forgot-password-link">
+          <a href="/forgot-password">Forgot Password?</a>
+        </p>
         <p className="auth-link">
           Don't have an account? <a href="/register">Sign up</a>
         </p>

@@ -65,6 +65,30 @@ export const api = {
       if (!response.ok) throw new Error(data.message || "Failed to reset password");
       return data;
     },
+
+    sendResetOTP: async (email) => {
+      const response = await fetch(`${BASE_URL}/auth/send-reset-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to send OTP");
+      return data;
+    },
+
+    verifyResetOTP: async (email, otp, newPassword) => {
+      const response = await fetch(`${BASE_URL}/auth/verify-reset-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, newPassword }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to verify OTP");
+      return data;
+    },
   },
 
   transactions: {

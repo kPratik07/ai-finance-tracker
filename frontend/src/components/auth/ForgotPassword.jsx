@@ -17,13 +17,13 @@ export const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      const response = await api.auth.forgotPassword(email);
-      setMessage(response.message || "Password reset link sent to your email!");
+      const response = await api.auth.sendResetOTP(email);
+      setMessage(response.message || "OTP sent to your email!");
       setTimeout(() => {
-        navigate("/login");
-      }, 3000);
+        navigate("/verify-otp", { state: { email } });
+      }, 2000);
     } catch (err) {
-      setError(err.message || "Failed to send reset link");
+      setError(err.message || "Failed to send OTP");
     } finally {
       setLoading(false);
     }
@@ -34,7 +34,7 @@ export const ForgotPassword = () => {
       <div className="auth-card">
         <h2>Forgot Password</h2>
         <p className="forgot-password-subtitle">
-          Enter your email address and we'll send you a link to reset your password.
+          Enter your email address and we'll send you an OTP to reset your password.
         </p>
         
         {error && <div className="error-message">{error}</div>}
@@ -51,7 +51,7 @@ export const ForgotPassword = () => {
             />
           </div>
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? "Sending..." : "Send Reset Link"}
+            {loading ? "Sending..." : "Send OTP"}
           </button>
         </form>
         

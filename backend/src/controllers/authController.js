@@ -233,6 +233,160 @@ export const resetPassword = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Send OTP for password reset
+// @route   POST /api/auth/send-reset-otp
+// @access  Public
+export const sendResetOTP = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new ApiError("User not found with this email", 404);
+  }
+
+  // Generate 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Hash OTP before storing
+  user.resetPasswordOTP = crypto
+    .createHash("sha256")
+    .update(otp)
+    .digest("hex");
+
+  // Set expire time (10 minutes)
+  user.resetPasswordOTPExpire = Date.now() + 10 * 60 * 1000;
+
+  await user.save();
+
+  // Email HTML template
+  const emailHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .otp-box { background: white; border: 2px dashed #667eea; padding: 20px; text-align: center; margin: 20px 0; border-radius: 10px; }
+        .otp-code { font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 5px; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🔐 Password Reset OTP</h1>
+        </div>
+        <div class="content">
+          <p>Hi ${user.name},</p>
+          <p>You requested to reset your password for your AI Finance Tracker account.</p>
+          <p>Use the following OTP to reset your password:</p>
+          <div class="otp-box">
+            <div class="otp-code">${otp}</div>
+          </div>
+          <div class="warning">
+            <strong>⚠️ Important:</strong> This OTP will expire in 10 minutes for security reasons.
+          </div>
+          <p>If you didn't request this password reset, please ignore this email and your password will remain unchanged.</p>
+        </div>
+        <div class="footer">
+          <p>© ${new Date().getFullYear()} AI Finance Tracker. All rights reserved.</p>
+          <p>This is an automated email, please do not reply.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    // Try Brevo first, then fallback to SMTP
+    if (process.env.BREVO_API_KEY) {
+      await sendEmailBrevo({
+        email: user.email,
+        subject: "Password Reset OTP - AI Finance Tracker",
+        html: emailHtml,
+      });
+    } else {
+      await sendEmail({
+        email: user.email,
+        subject: "Password Reset OTP - AI Finance Tracker",
+        html: emailHtml,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "OTP has been sent to your email",
+    });
+  } catch (error) {
+    // If email fails, clear the OTP
+    user.resetPasswordOTP = null;
+    user.resetPasswordOTPExpire = null;
+    await user.save();
+
+    console.error("Email send error:", error);
+
+    // For development, still return the OTP if email fails
+    if (process.env.NODE_ENV === "development") {
+      console.log("Password Reset OTP:", otp);
+
+      return res.status(200).json({
+        success: true,
+        message: "Email service unavailable. OTP logged to console.",
+        otp, // Only in development
+      });
+    }
+
+    throw new ApiError("Email could not be sent. Please try again later.", 500);
+  }
+});
+
+// @desc    Verify OTP and reset password
+// @route   POST /api/auth/verify-reset-otp
+// @access  Public
+export const verifyResetOTP = asyncHandler(async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  if (!email || !otp || !newPassword) {
+    throw new ApiError("Please provide email, OTP, and new password", 400);
+  }
+
+  // Hash the OTP
+  const hashedOTP = crypto
+    .createHash("sha256")
+    .update(otp)
+    .digest("hex");
+
+  // Find user by email, OTP, and check if not expired
+  const user = await User.findOne({
+    email,
+    resetPasswordOTP: hashedOTP,
+    resetPasswordOTPExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new ApiError("Invalid or expired OTP", 400);
+  }
+
+  // Hash new password
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(newPassword, salt);
+
+  // Clear OTP fields
+  user.resetPasswordOTP = null;
+  user.resetPasswordOTPExpire = null;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password reset successful",
+  });
+});
+
 // Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
