@@ -27,8 +27,12 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
-        ? [process.env.CORS_ORIGIN]
-        : ["http://localhost:3000"],
+        ? [
+            process.env.CORS_ORIGIN,
+            "https://ai-finance-tracker-rosy.vercel.app",
+            "https://ai-finance-tracker-rosy.vercel.app/"
+          ].filter(Boolean)
+        : ["http://localhost:3000", "http://localhost:5173"],
     credentials: true,
   })
 );
