@@ -32,6 +32,9 @@ export const api = {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Registration failed");
+      
+      // Store token in localStorage after successful registration
+      localStorage.setItem("token", data.token);
       return data;
     },
 

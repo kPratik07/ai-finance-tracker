@@ -43,7 +43,11 @@ export const Register = () => {
         email: formData.email,
         password: formData.password,
       });
-      navigate("/login");
+      // Navigate to dashboard after successful registration
+      setTimeout(() => {
+        navigate("/", { replace: true });
+        window.location.reload(); // Force reload to update nav state
+      }, 100);
     } catch (err) {
       setError(err.message);
     } finally {
