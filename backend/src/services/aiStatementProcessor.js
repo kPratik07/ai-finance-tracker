@@ -59,28 +59,36 @@ export const processStatementWithAI = async (content, userId) => {
   } catch (error) {
     console.error(`Error with ${provider} provider:`, error.message);
 
+    // Check if it's a rate limit error
+    const isRateLimitError = error.message && (
+      error.message.includes("rate_limit_exceeded") || 
+      error.message.includes("429") ||
+      error.message.includes("Rate limit")
+    );
+
     // Fallback mechanism - try other providers if the selected one fails
-    if (provider !== "auto") {
-      console.log("Attempting fallback to other providers...");
+    console.log("Attempting fallback to other providers...");
 
-      try {
-        if (process.env.GROQ_API_KEY && provider !== "groq") {
-          console.log("Fallback: Trying Groq API");
-          return await processStatementWithGroq(content, userId);
-        }
-
-        if (process.env.GEMINI_API_KEY && provider !== "gemini") {
-          console.log("Fallback: Trying Gemini API");
-          return await processStatementWithGemini(content, userId);
-        }
-
-        if (process.env.OPENAI_API_KEY && provider !== "openai") {
-          console.log("Fallback: Trying OpenAI API");
-          return await processStatementWithOpenAI(content, userId);
-        }
-      } catch (fallbackError) {
-        console.error("Fallback also failed:", fallbackError.message);
+    try {
+      // Try Gemini if Groq failed
+      if (process.env.GEMINI_API_KEY && provider !== "gemini") {
+        console.log("Fallback: Trying Gemini API");
+        return await processStatementWithGemini(content, userId);
       }
+
+      // Try OpenAI if others failed
+      if (process.env.OPENAI_API_KEY && provider !== "openai") {
+        console.log("Fallback: Trying OpenAI API");
+        return await processStatementWithOpenAI(content, userId);
+      }
+
+      // Try Groq as last resort if it wasn't the original provider
+      if (process.env.GROQ_API_KEY && provider !== "groq" && !isRateLimitError) {
+        console.log("Fallback: Trying Groq API");
+        return await processStatementWithGroq(content, userId);
+      }
+    } catch (fallbackError) {
+      console.error("Fallback also failed:", fallbackError.message);
     }
 
     throw error;
