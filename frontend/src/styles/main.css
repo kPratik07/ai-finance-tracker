@@ -90,6 +90,13 @@ body {
   color: var(--primary-color);
 }
 
+.nav-links a.active {
+  color: var(--primary-color);
+  font-weight: 600;
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 0.15rem;
+}
+
 .nav-link-btn {
   padding: 0.5rem 1.25rem;
   border-radius: 6px;

@@ -46,9 +46,24 @@ function AppContent() {
               </div>
               {isLoggedIn ? (
                 <div className="nav-links">
-                  <Link to="/dashboard">Dashboard</Link>
-                  <Link to="/upload">Upload Statement</Link>
-                  <Link to="/transactions">Transactions</Link>
+                  <Link 
+                    to="/dashboard" 
+                    className={location.pathname === '/dashboard' ? 'active' : ''}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    to="/upload" 
+                    className={location.pathname === '/upload' ? 'active' : ''}
+                  >
+                    Upload Statement
+                  </Link>
+                  <Link 
+                    to="/transactions" 
+                    className={location.pathname === '/transactions' ? 'active' : ''}
+                  >
+                    Transactions
+                  </Link>
                   <button onClick={handleLogout} className="logout-btn">
                     Logout
                   </button>
