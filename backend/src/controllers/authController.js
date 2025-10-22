@@ -309,12 +309,15 @@ export const sendResetOTP = asyncHandler(async (req, res) => {
         subject: "Password Reset OTP - AI Finance Tracker",
         html: emailHtml,
       });
-    } else {
+    } else if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
       await sendEmail({
         email: user.email,
         subject: "Password Reset OTP - AI Finance Tracker",
         html: emailHtml,
       });
+    } else {
+      // No email service configured
+      throw new Error("Email service not configured");
     }
 
     res.status(200).json({
@@ -322,23 +325,28 @@ export const sendResetOTP = asyncHandler(async (req, res) => {
       message: "OTP has been sent to your email",
     });
   } catch (error) {
-    // If email fails, clear the OTP
-    user.resetPasswordOTP = null;
-    user.resetPasswordOTPExpire = null;
-    await user.save();
-
     console.error("Email send error:", error);
 
-    // For development, still return the OTP if email fails
+    // For development, still allow password reset even if email fails
     if (process.env.NODE_ENV === "development") {
-      console.log("Password Reset OTP:", otp);
+      console.log("=".repeat(50));
+      console.log("PASSWORD RESET OTP (Development Mode)");
+      console.log("Email:", user.email);
+      console.log("OTP:", otp);
+      console.log("Valid for: 10 minutes");
+      console.log("=".repeat(50));
 
       return res.status(200).json({
         success: true,
-        message: "Email service unavailable. OTP logged to console.",
+        message: "Email service unavailable. Check server console for OTP.",
         otp, // Only in development
       });
     }
+
+    // In production, clear the OTP if email fails
+    user.resetPasswordOTP = null;
+    user.resetPasswordOTPExpire = null;
+    await user.save();
 
     throw new ApiError("Email could not be sent. Please try again later.", 500);
   }
