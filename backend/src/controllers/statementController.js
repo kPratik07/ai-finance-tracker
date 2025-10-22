@@ -12,6 +12,15 @@ export const uploadStatement = asyncHandler(async (req, res) => {
     // Parse file content
     const fileContent = await parseFile(req.file);
 
+    // Validate content length (AI models have token limits)
+    const MAX_CONTENT_LENGTH = 13000;
+    if (fileContent.length > MAX_CONTENT_LENGTH) {
+      throw new ApiError(
+        "The uploaded file contains too much data. Please try uploading a statement with fewer transactions or a shorter time period.",
+        400
+      );
+    }
+
     // Process statement with AI (auto-selects best provider: Groq > Gemini > OpenAI)
     const transactions = await processStatementWithAI(fileContent, req.user._id);
 

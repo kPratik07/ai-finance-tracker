@@ -9,7 +9,7 @@ export const TransactionList = ({ transactions = [], onUpdate }) => {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this transaction?"))
+    if (!window.confirm("AI Finance Tracker\n\nAre you sure you want to delete this transaction?"))
       return;
 
     try {
