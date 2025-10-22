@@ -19,16 +19,18 @@
 
 .landing-title {
   font-size: 3.5rem;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 20px;
   animation: fadeInDown 0.8s ease-out;
 }
 
 .brand-highlight {
-  background: linear-gradient(to right, #ffd89b, #19547b);
+  background: linear-gradient(135deg, #FFD700, #FFA500, #FF6B6B, #4ECDC4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  font-weight: 900;
+  text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
 }
 
 .landing-subtitle {

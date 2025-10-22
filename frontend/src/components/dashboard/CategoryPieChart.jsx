@@ -33,9 +33,18 @@ export const CategoryPieChart = ({ transactions }) => {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 1.5,
     plugins: {
       legend: {
         position: "bottom",
+        labels: {
+          boxWidth: 12,
+          padding: 8,
+          font: {
+            size: 11,
+          },
+        },
       },
     },
   };

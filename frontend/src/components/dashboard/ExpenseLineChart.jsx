@@ -74,14 +74,14 @@ export const ExpenseLineChart = ({ transactions }) => {
         backgroundColor: "rgba(220, 53, 69, 0.1)",
         fill: true,
         tension: 0.4,
-        pointRadius: 6,
-        pointHoverRadius: 8,
+        pointRadius: 4,
+        pointHoverRadius: 6,
         pointBackgroundColor: "#dc3545",
         pointBorderColor: "#fff",
         pointBorderWidth: 2,
         pointHoverBackgroundColor: "#fff",
         pointHoverBorderColor: "#dc3545",
-        pointHoverBorderWidth: 3,
+        pointHoverBorderWidth: 2,
       },
       {
         label: "Average",
@@ -104,11 +104,13 @@ export const ExpenseLineChart = ({ transactions }) => {
         position: "top",
         labels: {
           usePointStyle: true,
-          padding: 15,
+          padding: 10,
           font: {
-            size: 12,
+            size: 11,
             weight: "600",
           },
+          boxWidth: 8,
+          boxHeight: 8,
         },
       },
       tooltip: {
