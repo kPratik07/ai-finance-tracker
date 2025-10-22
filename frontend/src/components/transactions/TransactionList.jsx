@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { TransactionEdit } from "./TransactionEdit";
+import { ConfirmModal } from "../common/ConfirmModal";
 import { formatCurrency, getCurrencySymbol } from "../../utils/formatters";
 import { api } from "../../api/api";
 import "../../styles/components.css";
@@ -7,20 +8,29 @@ import "../../styles/components.css";
 export const TransactionList = ({ transactions = [], onUpdate }) => {
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, transactionId: null });
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("AI Finance Tracker\n\nAre you sure you want to delete this transaction?"))
-      return;
+  const handleDeleteClick = (id) => {
+    setDeleteModal({ isOpen: true, transactionId: id });
+  };
+
+  const handleDeleteConfirm = async () => {
+    const { transactionId } = deleteModal;
+    setDeleteModal({ isOpen: false, transactionId: null });
 
     try {
       setLoading(true);
-      await api.transactions.delete(id);
+      await api.transactions.delete(transactionId);
       onUpdate();
     } catch (error) {
       console.error("Error deleting transaction:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, transactionId: null });
   };
 
   return (
@@ -93,7 +103,7 @@ export const TransactionList = ({ transactions = [], onUpdate }) => {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(transaction._id)}
+                        onClick={() => handleDeleteClick(transaction._id)}
                         className="btn btn-delete"
                         disabled={loading}
                       >
@@ -107,6 +117,13 @@ export const TransactionList = ({ transactions = [], onUpdate }) => {
           ))}
         </div>
       )}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        title="AI Finance Tracker"
+        message="Are you sure you want to delete this transaction?"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </div>
   );
 };
