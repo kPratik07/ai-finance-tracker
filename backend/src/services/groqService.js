@@ -17,6 +17,67 @@ const getGroqClient = () => {
   return groq;
 };
 
+// Helper function to estimate tokens (rough approximation: 1 token ≈ 4 characters)
+const estimateTokens = (text) => {
+  return Math.ceil(text.length / 4);
+};
+
+// Helper function to split content into chunks based on token limit
+const chunkContent = (content, maxTokensPerChunk = 6000) => {
+  const chunks = [];
+  
+  // Reserve tokens for prompt and response (system message + instructions)
+  const reservedTokens = 2000;
+  const effectiveMaxTokens = maxTokensPerChunk - reservedTokens;
+  const maxCharsPerChunk = effectiveMaxTokens * 4; // 1 token ≈ 4 characters
+  
+  // Split by lines first
+  const lines = content.split('\n');
+  let currentChunk = [];
+  let currentLength = 0;
+  
+  for (const line of lines) {
+    const lineLength = line.length;
+    
+    // If adding this line would exceed the limit, save current chunk
+    if (currentLength + lineLength > maxCharsPerChunk && currentChunk.length > 0) {
+      chunks.push(currentChunk.join('\n'));
+      currentChunk = [];
+      currentLength = 0;
+    }
+    
+    // If a single line is too long, split it by character count
+    if (lineLength > maxCharsPerChunk) {
+      // Save current chunk if it has content
+      if (currentChunk.length > 0) {
+        chunks.push(currentChunk.join('\n'));
+        currentChunk = [];
+        currentLength = 0;
+      }
+      
+      // Split the long line into smaller pieces
+      for (let i = 0; i < lineLength; i += maxCharsPerChunk) {
+        chunks.push(line.substring(i, i + maxCharsPerChunk));
+      }
+    } else {
+      currentChunk.push(line);
+      currentLength += lineLength;
+    }
+  }
+  
+  // Add the last chunk if it has content
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk.join('\n'));
+  }
+  
+  console.log(`Created ${chunks.length} chunks with sizes:`, chunks.map(c => `${c.length} chars (~${estimateTokens(c)} tokens)`));
+  
+  return chunks;
+};
+
+// Helper function to add delay between API calls
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const processStatementWithGroq = async (content, userId) => {
   try {
     // Validate content
@@ -26,6 +87,7 @@ export const processStatementWithGroq = async (content, userId) => {
 
     console.log("=== PROCESSING STATEMENT WITH GROQ ===");
     console.log("Content length:", content.length);
+    console.log("Estimated tokens:", estimateTokens(content));
     console.log("User ID:", userId);
 
     // Check if content contains bank statement keywords
@@ -37,6 +99,15 @@ export const processStatementWithGroq = async (content, userId) => {
 
     if (!hasBankKeywords) {
       throw new Error("Content does not appear to be a bank statement");
+    }
+
+    // Check if content needs to be chunked
+    const estimatedTokens = estimateTokens(content);
+    const MAX_TOKENS_PER_REQUEST = 6000; // Conservative limit to avoid rate limits (12000 TPM / 2 for safety)
+    
+    if (estimatedTokens > MAX_TOKENS_PER_REQUEST) {
+      console.log(`Content is large (${estimatedTokens} tokens), splitting into chunks...`);
+      return await processLargeStatementInChunks(content, userId);
     }
 
     // Improved prompt for Indian bank statements
@@ -228,4 +299,204 @@ CRITICAL: Ensure valid JSON - no line breaks in strings, proper escaping, comple
     console.error("Error stack:", error.stack);
     throw new ApiError(`Failed to process statement: ${error.message}`, 500);
   }
+};
+
+// Process large statements by splitting into chunks
+const processLargeStatementInChunks = async (content, userId) => {
+  try {
+    const chunks = chunkContent(content, 6000);
+    console.log(`Split content into ${chunks.length} chunks`);
+    
+    const allTransactions = [];
+    
+    for (let i = 0; i < chunks.length; i++) {
+      console.log(`\nProcessing chunk ${i + 1}/${chunks.length}...`);
+      console.log(`Chunk ${i + 1} length:`, chunks[i].length);
+      console.log(`Chunk ${i + 1} estimated tokens:`, estimateTokens(chunks[i]));
+      
+      try {
+        const chunkTransactions = await processChunk(chunks[i], i + 1, chunks.length);
+        console.log(`Chunk ${i + 1} extracted ${chunkTransactions.length} transactions`);
+        allTransactions.push(...chunkTransactions);
+        
+        // Add delay between chunks to respect rate limits (12000 tokens/min)
+        // Wait 6 seconds between chunks to be safe
+        if (i < chunks.length - 1) {
+          console.log('Waiting 6 seconds before next chunk to respect rate limits...');
+          await delay(6000);
+        }
+      } catch (chunkError) {
+        console.error(`Error processing chunk ${i + 1}:`, chunkError.message);
+        // Continue with other chunks even if one fails
+        if (chunkError.message.includes('rate_limit')) {
+          console.log('Rate limit hit, waiting 15 seconds before retry...');
+          await delay(15000);
+          // Retry this chunk
+          try {
+            const chunkTransactions = await processChunk(chunks[i], i + 1, chunks.length);
+            console.log(`Chunk ${i + 1} extracted ${chunkTransactions.length} transactions (retry successful)`);
+            allTransactions.push(...chunkTransactions);
+          } catch (retryError) {
+            console.error(`Retry failed for chunk ${i + 1}:`, retryError.message);
+            // Continue to next chunk
+          }
+        }
+      }
+    }
+    
+    if (allTransactions.length === 0) {
+      throw new Error('No transactions found in any chunk');
+    }
+    
+    console.log(`\nTotal transactions extracted from all chunks: ${allTransactions.length}`);
+    
+    // Remove duplicates based on date, description, and amount
+    const uniqueTransactions = removeDuplicateTransactions(allTransactions);
+    console.log(`Unique transactions after deduplication: ${uniqueTransactions.length}`);
+    
+    // Save all transactions to database
+    const savedTransactions = await Promise.all(
+      uniqueTransactions.map(async (transaction) => {
+        // Validate required fields
+        if (
+          !transaction.description ||
+          transaction.amount === undefined ||
+          !transaction.type
+        ) {
+          console.warn('Skipping invalid transaction:', transaction);
+          return null;
+        }
+
+        const savedTransaction = await Transaction.create({
+          ...transaction,
+          user: userId,
+          date: new Date(transaction.date || new Date()),
+        });
+
+        return savedTransaction;
+      })
+    );
+    
+    const validTransactions = savedTransactions.filter((t) => t !== null);
+    
+    if (validTransactions.length === 0) {
+      throw new Error('No valid transactions found in the statement');
+    }
+    
+    console.log(`Successfully saved ${validTransactions.length} transactions`);
+    return validTransactions;
+  } catch (error) {
+    console.error('Error processing large statement:', error);
+    throw error;
+  }
+};
+
+// Process a single chunk
+const processChunk = async (chunkContent, chunkNumber, totalChunks) => {
+  const prompt = `Extract ALL transactions from this Indian bank statement chunk (Part ${chunkNumber}/${totalChunks}).
+
+IMPORTANT RULES:
+1. Extract ONLY real transactions from the statement (ignore headers, footers, account details)
+2. Look for transaction rows with Date, Narration, Amount, and Balance columns
+3. For UPI transactions: extract the merchant name from the narration (e.g., "UPI/LILA PITTURA DECO" -> "LILA PITTURA DECO")
+4. For IMPS/NEFT: extract the sender/receiver name
+5. Amounts: Use the "Withdrawal(Dr)/Deposit(Cr)" column values
+6. Type: "income" for (Cr) credits, "expense" for (Dr) debits
+7. Currency: INR (Indian Rupees)
+8. Date: Use the exact date from the statement (format: YYYY-MM-DD)
+9. Category: Categorize based on merchant/description:
+   - UPI/Gaming apps -> "entertainment"
+   - UPI/Food merchants -> "food" 
+   - UPI/Transport -> "transport"
+   - IMPS/NEFT transfers -> "other"
+   - Salary/credits -> "salary"
+   - Shopping -> "shopping"
+   - Bills/utilities -> "utilities"
+
+Statement chunk:
+${chunkContent}
+
+Return ONLY a valid JSON array. Keep descriptions SHORT (max 50 chars). Format:
+[{"description":"UPI/MERCHANT","amount":300,"type":"expense","category":"food","date":"2023-09-06","merchant":"MERCHANT","currency":"INR"}]
+
+CRITICAL: Ensure valid JSON - no line breaks in strings, proper escaping, complete array.`;
+
+  const groqClient = getGroqClient();
+  if (!groqClient) {
+    throw new Error('Groq API key not configured');
+  }
+
+  const response = await groqClient.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
+    messages: [
+      {
+        role: 'system',
+        content:
+          'You are a financial data extraction expert specializing in Indian bank statements. Extract transaction data accurately from Kotak, HDFC, SBI, ICICI and other Indian bank statements. Always return valid JSON format without markdown formatting.',
+      },
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+    temperature: 0.1,
+    max_tokens: 8000,
+  });
+
+  const responseContent = response.choices[0].message.content;
+  
+  // Parse response
+  let cleanedContent = responseContent.trim();
+  if (cleanedContent.startsWith('```json')) {
+    cleanedContent = cleanedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+  } else if (cleanedContent.startsWith('```')) {
+    cleanedContent = cleanedContent.replace(/```\n?/g, '');
+  }
+
+  let jsonMatch = cleanedContent.match(/\[[\s\S]*\]/);
+  
+  if (!jsonMatch) {
+    const lastBracket = cleanedContent.lastIndexOf(']');
+    const firstBracket = cleanedContent.indexOf('[');
+    if (firstBracket !== -1 && lastBracket !== -1) {
+      cleanedContent = cleanedContent.substring(firstBracket, lastBracket + 1);
+      jsonMatch = [cleanedContent];
+    }
+  }
+
+  let transactions = [];
+  if (jsonMatch) {
+    let jsonString = jsonMatch[0];
+    
+    try {
+      transactions = JSON.parse(jsonString);
+    } catch (e) {
+      // Try to fix truncated JSON
+      const objectPattern = /\{[^{}]*"description"[^{}]*"amount"[^{}]*"type"[^{}]*\}/g;
+      const completeObjects = jsonString.match(objectPattern) || [];
+      
+      if (completeObjects.length > 0) {
+        const fixedJson = '[' + completeObjects.join(',') + ']';
+        transactions = JSON.parse(fixedJson);
+      } else {
+        console.warn(`Could not parse chunk ${chunkNumber}, skipping`);
+        return [];
+      }
+    }
+  }
+
+  return Array.isArray(transactions) ? transactions : [];
+};
+
+// Remove duplicate transactions
+const removeDuplicateTransactions = (transactions) => {
+  const seen = new Set();
+  return transactions.filter((transaction) => {
+    const key = `${transaction.date}-${transaction.description}-${transaction.amount}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
 };
