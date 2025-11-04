@@ -90,20 +90,34 @@ export const processStatementWithGroq = async (content, userId) => {
     console.log("Estimated tokens:", estimateTokens(content));
     console.log("User ID:", userId);
 
-    // Check if content contains bank statement keywords
+    // Clear all existing transactions for this user before processing new statement
+    const deletedCount = await Transaction.deleteMany({ user: userId });
+    console.log(`Cleared ${deletedCount.deletedCount} existing transactions for user`);
+
+    // Enhanced validation: Check if content contains bank statement keywords
+    const contentLower = content.toLowerCase();
     const hasBankKeywords =
-      content.toLowerCase().includes("kotak") ||
-      content.toLowerCase().includes("bank") ||
-      content.toLowerCase().includes("upi") ||
-      content.toLowerCase().includes("transaction");
+      contentLower.includes("kotak") ||
+      contentLower.includes("hdfc") ||
+      contentLower.includes("icici") ||
+      contentLower.includes("sbi") ||
+      contentLower.includes("axis") ||
+      contentLower.includes("bank") ||
+      contentLower.includes("upi") ||
+      contentLower.includes("transaction") ||
+      contentLower.includes("statement") ||
+      contentLower.includes("account") ||
+      contentLower.includes("balance") ||
+      contentLower.includes("credit") ||
+      contentLower.includes("debit");
 
     if (!hasBankKeywords) {
-      throw new Error("Content does not appear to be a bank statement");
+      throw new Error("⚠️ Invalid File: This does not appear to be a bank statement. Please upload a valid bank statement (PDF, CSV, or TXT) containing transaction details.");
     }
 
     // Check if content needs to be chunked
     const estimatedTokens = estimateTokens(content);
-    const MAX_TOKENS_PER_REQUEST = 6000; // Conservative limit to avoid rate limits (12000 TPM / 2 for safety)
+    const MAX_TOKENS_PER_REQUEST = 8000; // Optimized limit for better performance
     
     if (estimatedTokens > MAX_TOKENS_PER_REQUEST) {
       console.log(`Content is large (${estimatedTokens} tokens), splitting into chunks...`);
@@ -304,7 +318,7 @@ CRITICAL: Ensure valid JSON - no line breaks in strings, proper escaping, comple
 // Process large statements by splitting into chunks
 const processLargeStatementInChunks = async (content, userId) => {
   try {
-    const chunks = chunkContent(content, 6000);
+    const chunks = chunkContent(content, 8000);
     console.log(`Split content into ${chunks.length} chunks`);
     
     const allTransactions = [];
@@ -319,18 +333,18 @@ const processLargeStatementInChunks = async (content, userId) => {
         console.log(`Chunk ${i + 1} extracted ${chunkTransactions.length} transactions`);
         allTransactions.push(...chunkTransactions);
         
-        // Add delay between chunks to respect rate limits (12000 tokens/min)
-        // Wait 6 seconds between chunks to be safe
+        // Add minimal delay between chunks to respect rate limits
+        // Wait 1 second between chunks for better UX
         if (i < chunks.length - 1) {
-          console.log('Waiting 6 seconds before next chunk to respect rate limits...');
-          await delay(6000);
+          console.log('Waiting 1 second before next chunk...');
+          await delay(1000);
         }
       } catch (chunkError) {
         console.error(`Error processing chunk ${i + 1}:`, chunkError.message);
         // Continue with other chunks even if one fails
         if (chunkError.message.includes('rate_limit')) {
-          console.log('Rate limit hit, waiting 15 seconds before retry...');
-          await delay(15000);
+          console.log('Rate limit hit, waiting 10 seconds before retry...');
+          await delay(10000);
           // Retry this chunk
           try {
             const chunkTransactions = await processChunk(chunks[i], i + 1, chunks.length);

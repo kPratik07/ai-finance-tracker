@@ -1,7 +1,7 @@
 import React from "react";
 import { formatCurrency } from "../../utils/formatters";
 
-export const StatisticsCard = ({ title, value, type, icon }) => {
+export const StatisticsCard = ({ title, value, type, icon, isCurrency = true }) => {
   const getDefaultIcon = () => {
     switch (type) {
       case "income":
@@ -23,7 +23,7 @@ export const StatisticsCard = ({ title, value, type, icon }) => {
       </div>
       <div className="card-body">
         <p className="card-value">
-          {typeof value === "number" ? formatCurrency(value) : value}
+          {typeof value === "number" && isCurrency ? formatCurrency(value) : value}
         </p>
       </div>
     </div>

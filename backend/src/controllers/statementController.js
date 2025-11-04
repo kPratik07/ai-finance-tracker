@@ -42,16 +42,16 @@ export const uploadStatement = asyncHandler(async (req, res) => {
     let statusCode = 500;
     
     if (error.message.includes('rate_limit') || error.message.includes('429')) {
-      errorMessage = 'The AI service is currently rate limited. Please try again in a few moments.';
+      errorMessage = '⏳ Rate Limit: The AI service is currently busy. Please try again in a few moments.';
       statusCode = 429;
     } else if (error.message.includes('Invalid or empty file')) {
-      errorMessage = 'The uploaded file appears to be empty or corrupted. Please try a different file.';
+      errorMessage = '❌ Invalid File: The uploaded file appears to be empty or corrupted. Please try a different file.';
       statusCode = 400;
-    } else if (error.message.includes('does not appear to be a bank statement')) {
-      errorMessage = 'The uploaded file does not appear to be a valid bank statement. Please upload a PDF, CSV, or TXT file containing transaction data.';
+    } else if (error.message.includes('does not appear to be a bank statement') || error.message.includes('Invalid File')) {
+      errorMessage = '⚠️ Not a Bank Statement: The uploaded file does not contain bank statement data. Please upload a valid bank statement (PDF, CSV, or TXT) with transaction details from banks like Kotak, HDFC, ICICI, SBI, Axis, etc.';
       statusCode = 400;
     } else if (error.message.includes('No transactions found')) {
-      errorMessage = 'No valid transactions were found in the statement. Please ensure the file contains transaction data.';
+      errorMessage = '📭 No Transactions: No valid transactions were found in the statement. Please ensure the file contains transaction data with dates, amounts, and descriptions.';
       statusCode = 400;
     }
     

@@ -81,6 +81,7 @@ export const Dashboard = () => {
           value={stats.transactionCount}
           type="neutral"
           icon="📊"
+          isCurrency={false}
         />
       </div>
 
