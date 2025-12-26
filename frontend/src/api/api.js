@@ -7,6 +7,18 @@ const getAuthHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem("token")}`,
 });
 
+// Handle token expiry and redirect to login
+const handleApiError = (response, data) => {
+  if (response.status === 401 && data.message?.includes("token")) {
+    // Prevent multiple redirects
+    if (!window.location.pathname.includes('/login')) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    throw new Error("Session expired. Please login again.");
+  }
+};
+
 export const api = {
   auth: {
     login: async (credentials) => {
@@ -98,8 +110,10 @@ export const api = {
       });
 
       const data = await response.json();
-      if (!response.ok)
+      if (!response.ok) {
+        handleApiError(response, data);
         throw new Error(data.message || "Failed to fetch transactions");
+      }
       return data;
     },
 
@@ -111,8 +125,10 @@ export const api = {
       });
 
       const result = await response.json();
-      if (!response.ok)
+      if (!response.ok) {
+        handleApiError(response, result);
         throw new Error(result.message || "Failed to create transaction");
+      }
       return result;
     },
 
@@ -123,8 +139,10 @@ export const api = {
       });
 
       const data = await response.json();
-      if (!response.ok)
+      if (!response.ok) {
+        handleApiError(response, data);
         throw new Error(data.message || "Failed to delete transaction");
+      }
       return data;
     },
 
@@ -136,8 +154,10 @@ export const api = {
       });
 
       const result = await response.json();
-      if (!response.ok)
+      if (!response.ok) {
+        handleApiError(response, result);
         throw new Error(result.message || "Failed to update transaction");
+      }
       return result;
     },
   },
@@ -156,8 +176,10 @@ export const api = {
       });
 
       const data = await response.json();
-      if (!response.ok)
+      if (!response.ok) {
+        handleApiError(response, data);
         throw new Error(data.message || "Failed to process statement");
+      }
       return data;
     },
   },

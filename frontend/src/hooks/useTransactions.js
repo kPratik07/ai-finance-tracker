@@ -13,7 +13,10 @@ export const useTransactions = () => {
       setTransactions(response.data);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      // Don't set error for token expiry (handled by API)
+      if (!err.message.includes("Session expired")) {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -26,7 +29,10 @@ export const useTransactions = () => {
       setTransactions((prev) => [...prev, response.data]);
       return response.data;
     } catch (err) {
-      setError(err.message);
+      // Don't set error for token expiry (handled by API)
+      if (!err.message.includes("Session expired")) {
+        setError(err.message);
+      }
       throw err;
     } finally {
       setLoading(false);
@@ -42,7 +48,10 @@ export const useTransactions = () => {
       );
       return response.data;
     } catch (err) {
-      setError(err.message);
+      // Don't set error for token expiry (handled by API)
+      if (!err.message.includes("Session expired")) {
+        setError(err.message);
+      }
       throw err;
     } finally {
       setLoading(false);
@@ -55,7 +64,10 @@ export const useTransactions = () => {
       await api.transactions.delete(id);
       setTransactions((prev) => prev.filter((t) => t._id !== id));
     } catch (err) {
-      setError(err.message);
+      // Don't set error for token expiry (handled by API)
+      if (!err.message.includes("Session expired")) {
+        setError(err.message);
+      }
       throw err;
     } finally {
       setLoading(false);
