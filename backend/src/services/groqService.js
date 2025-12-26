@@ -174,7 +174,7 @@ CRITICAL: Ensure valid JSON - no line breaks in strings, proper escaping, comple
         },
       ],
       temperature: 0.1,
-      max_tokens: 8000, // Increased to handle large statements
+      max_tokens: 12000, // Increased to handle large statements
     });
 
     console.log("Groq API call successful");
@@ -227,17 +227,53 @@ CRITICAL: Ensure valid JSON - no line breaks in strings, proper escaping, comple
           
           if (completeObjects.length > 0) {
             console.log(`Found ${completeObjects.length} complete transaction objects`);
-            // Reconstruct array with only complete objects
+            // Create a valid JSON array from complete objects
             fixedJson = '[' + completeObjects.join(',') + ']';
+            
+            // Add missing closing bracket if needed
+            if (!fixedJson.endsWith(']')) {
+              fixedJson += ']';
+            }
+            
+            // Ensure proper array structure
+            if (!fixedJson.startsWith('[')) {
+              fixedJson = '[' + fixedJson;
+            }
+            
+            console.log("Attempting to parse fixed JSON...");
             transactions = JSON.parse(fixedJson);
+            console.log("Successfully parsed fixed JSON with", transactions.length, "transactions");
           } else {
-            // Fallback: try to find last complete closing brace
-            const lastCompleteBrace = jsonString.lastIndexOf('}');
-            if (lastCompleteBrace !== -1) {
-              fixedJson = jsonString.substring(0, lastCompleteBrace + 1) + ']';
-              transactions = JSON.parse(fixedJson);
+            // If no complete objects found, try to extract partial data
+            console.log("No complete objects found, trying alternative parsing...");
+            
+            // Find the last complete transaction by looking for the pattern
+            const lastCompleteIndex = Math.max(
+              jsonString.lastIndexOf('"type"'),
+              jsonString.lastIndexOf('"category"'),
+              jsonString.lastIndexOf('"date"')
+            );
+            
+            if (lastCompleteIndex > 0) {
+              // Find the start of that transaction
+              const transactionStart = jsonString.lastIndexOf('{', lastCompleteIndex);
+              if (transactionStart > 0) {
+                const partialTransaction = jsonString.substring(transactionStart, lastCompleteIndex + 50);
+                // Try to close the object and array
+                const partialFixed = '[' + partialTransaction + '}]';
+                
+                try {
+                  transactions = JSON.parse(partialFixed);
+                  console.log("Successfully parsed partial transaction");
+                } catch (partialError) {
+                  console.log("Partial parsing also failed:", partialError.message);
+                  throw e; // Re-throw original error
+                }
+              } else {
+                throw e;
+              }
             } else {
-              throw e; // Re-throw if we can't fix it
+              throw e;
             }
           }
         }

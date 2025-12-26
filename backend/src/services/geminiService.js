@@ -47,10 +47,10 @@ export const processStatementWithGemini = async (content, userId) => {
 
     // Get the model
     const model = geminiClient.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: "gemini-1.5-flash-latest",
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 4000,
+        maxOutputTokens: 8000,
       }
     });
 
