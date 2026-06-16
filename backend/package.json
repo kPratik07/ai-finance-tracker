@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "SET NODE_ENV=development && nodemon src/server.js",
-    "kill-port": "npx kill-port 5000"
+    "kill-port": "npx kill-port 9090"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

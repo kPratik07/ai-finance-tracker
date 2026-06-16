@@ -68,7 +68,7 @@ An intelligent finance tracking application that uses AI to automatically extrac
 
 4. **Access the application**
    - Frontend: `http://localhost:5173`
-   - Backend: `http://localhost:5000`
+   - Backend: `http://localhost:9090`
 
 ## 🔑 Environment Variables
 
